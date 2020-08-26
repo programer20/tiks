@@ -1,0 +1,41 @@
+databaseChangeLog:
+
+   - changeSet:
+      id: invoice-item-product
+      author: deniskuzner@gmail.com
+      
+      changes:
+         - sql:
+           comment: Invoices, invoice items and products
+           strip-comments: true
+           sql: |
+
+              create table product(
+                 id number primary key, 
+                 name varchar2(100) not null,
+                 price number(10,2) not null,
+                 brand varchar2(100) not null,
+                 category varchar2(50) not null,
+                 description varchar2(500) not null);
+                 
+              create sequence sq_product;
+           
+              create table invoice(
+                 id number primary key, 
+                 created_on timestamp not null,
+                 total_amount number(10,2) not null, 
+                 payment_type varchar2(40) not null);
+
+              create sequence sq_invoice;
+
+              create table invoice_item(
+                 id number primary key, 
+                 quantity int not null, 
+                 amount number(10,2) not null,
+                 product_id number,
+                 invoice_id number);
+                 
+              create sequence sq_invoice_item;
+
+              alter table invoice_item add constraint fk_invoice foreign key(invoice_id) references invoice(id);
+              alter table invoice_item add constraint fk_product foreign key(product_id) references product(id);

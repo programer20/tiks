@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fon.tiks.mapper.InvoiceMapper">
+
+	<resultMap type="Invoice" id="InvoiceMap">
+		<id column="id" property="id" />
+		<result property="createdOn" column="created_on" />
+		<result property="totalAmount" column="total_amount" />
+		<result property="paymentType" column="payment_type" />
+		<collection property="items" ofType="InvoiceItem" resultMap="InvoiceItemMap" columnPrefix="it_" />
+	</resultMap>
+
+	<resultMap type="InvoiceItem" id="InvoiceItemMap">
+		<id property="id" column="id" />
+		<result property="quantity" column="quantity" />
+		<result property="amount" column="amount" />
+		<result property="invoiceId" column="invoice_id" />
+		<association property="product" javaType="Product">
+			<id column="product_id" property="id" />
+			<result column="product_name" property="name" />
+			<result column="product_price" property="price" />
+			<result column="product_brand" property="brand" />
+			<result column="product_category" property="category" />
+			<result column="product_description" property="description" />
+		</association>
+	</resultMap>
+
+	<!-- public int insert(Invoice invoice); -->
+	<insert id="insert" >
+		<selectKey order="BEFORE" resultType="Long" keyProperty="id">
+			select sq_invoice.nextval from dual
+		</selectKey>
+		INSERT INTO invoice(id, created_on, total_amount, payment_type)
+		VALUES(#{id}, current_timestamp, #{totalAmount}, #{paymentType})
+	</insert>
+
+	<!-- public int update(Invoice invoice); -->
+	<update id="update">
+		UPDATE invoice
+		SET created_on = current_timestamp
+			total_amount = #{totalAmount}
+			paymentType = #{paymentType}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- public int updateByAmount(@Param("amount") double amount); -->
+	<update id="updateByAmount">
+		UPDATE invoice
+		SET created_on = current_timestamp
+		WHERE total_amount &gt;= #{amount}
+	</update>
+	
+	<sql id="getInvoice">
+		SELECT 
+			i.*,
+			it.id it_id,
+			it.quantity it_quantity,
+			it.amount it_amount,
+			it.invoice_id it_invoice_id,
+			it.product_id it_product_id,
+			p.id it_product_id,
+			p.name it_product_name,
+			p.price it_product_price,
+			p.brand it_product_brand,
+			p.category it_product_category,
+			p.description it_product_description
+		FROM invoice i
+		JOIN invoice_item it on i.id = it.invoice_id
+		JOIN product p on it.product_id = p.id
+	</sql>
+
+	<!-- public Invoice getById(@Param("id") Long id); -->
+	<select id="getById" resultMap="InvoiceMap" parameterType="Long">
+		<include refid="getInvoice" />
+		WHERE i.id = #{id}
+	</select>
+
+	<!-- public List<Invoice> getAll(); -->
+	<select id="getAll" resultMap="InvoiceMap">
+		<include refid="getInvoice" />
+	</select>
+	
+	<!-- 	public List<Invoice> search(@Param("request") InvoiceSearchRequest invoiceSearchRequest); -->
+	<select id="search" resultMap="InvoiceMap">
+		<include refid="getInvoice" />
+		<where>
+			<if test="request.min != null">
+				i.total_amount &gt;= #{request.min}
+			</if>
+			<if test="request.max != null">
+				AND i.total_amount &lt;= #{request.max} 
+			</if>
+			<if test="request.paymentType != null">
+				AND lower(i.payment_type) like lower(#{request.paymentType})
+			</if>
+		</where> 
+	</select>
+
+	<!-- public int deleteById(@Param("id") Long id); -->
+	<delete id="deleteById" parameterType="long">
+		DELETE FROM invoice
+		WHERE id = #{id}
+	</delete>
+	
+	<!-- public void deleteAll(); -->
+	<delete id="deleteAll">
+		DELETE FROM invoice
+	</delete>
+
+</mapper>

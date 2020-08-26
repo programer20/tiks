@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fon.tiks.mapper.InvoiceItemMapper">
+	
+	<resultMap type="InvoiceItem" id="InvoiceItemMap">
+		<id property="id" column="id" />
+		<result property="quantity" column="quantity" />
+		<result property="amount" column="amount" />
+		<result property="invoiceId" column="invoice_id" />
+		<association property="product" javaType="Product">
+			<id property="id" column="product_id" />
+			<result column="name" property="name" />
+			<result column="price" property="price" />
+			<result column="brand" property="brand" />
+			<result column="category" property="category" />
+			<result column="description" property="description" />
+		</association>
+	</resultMap>
+
+	<!-- public int insert(InvoiceItem invoiceItem); -->
+	<insert id="insert">
+		<selectKey order="BEFORE" resultType="long" keyProperty="id">
+			select sq_invoice_item.nextval from dual
+		</selectKey>
+		INSERT INTO invoice_item(id, quantity, amount, invoice_id, product_id)
+		VALUES (#{id}, #{quantity}, #{amount}, #{invoiceId}, #{product.id})
+	</insert>
+
+	<!-- public int update(InvoiceItem invoiceItem); -->
+	<update id="update">
+		UPDATE invoice_item
+		SET quantity = #{quantity}
+			amount = #{amount}
+			invoice_id = #{invoiceId}
+			product_id = #{product.id}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- public List<InvoiceItem> getAll(); -->
+	<select id="getAll" resultMap="InvoiceItemMap">
+		SELECT *
+		FROM invoice_item
+	</select>
+
+	<!-- public List<InvoiceItem> getByInvoiceId(@Param("id") Long id); -->
+	<select id="getByInvoiceId" resultMap="InvoiceItemMap" parameterType="long">
+		SELECT *
+		FROM invoice_item i join product p on i.product_id = p.id
+		WHERE i.id = #{id}
+	</select>
+
+	<!-- public int deleteByInvoiceId(@Param("id") Long id); -->
+	<delete id="deleteByInvoiceId" parameterType="long">
+		DELETE FROM invoice_item
+		WHERE invoice_id = #{id}
+	</delete>
+	
+	<!-- public int deleteAll(); -->
+	<delete id="deleteAll">
+		DELETE FROM invoice_item
+	</delete>
+	
+</mapper>

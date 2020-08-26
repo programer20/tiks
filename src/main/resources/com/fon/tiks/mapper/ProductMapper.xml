@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fon.tiks.mapper.ProductMapper">
+
+	<resultMap type="Product" id="ProductMap">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="price" property="price" />
+		<result column="brand" property="brand" />
+		<result column="category" property="category" />
+		<result column="description" property="description" />
+	</resultMap>
+	
+	<!-- public Product insert(Product product); -->
+	<insert id="insert">
+		<selectKey order="BEFORE" resultType="Long" keyProperty="id">
+			select sq_product.nextval from dual
+		</selectKey>
+		INSERT INTO product(id, name, price, brand, category, description)
+		VALUES(#{id}, #{name}, #{price}, #{brand}, #{category}, #{description})
+	</insert>
+	
+	<!-- public Product update(Product product); -->
+	<update id="update">
+		UPDATE product
+		SET name = #{name}
+			price = #{price}
+			brand = #{brand}
+			description = #{description}
+		WHERE id = #{id} 
+	</update>
+	
+	<!-- public Product getById(Long id); -->
+	<select id="getById" resultMap="ProductMap" parameterType="Long">
+		SELECT * FROM product
+		WHERE id = #{id}
+	</select>
+	
+	<!-- public List<Product> getAll(); -->
+	<select id="getAll" resultMap="ProductMap">
+		SELECT * FROM product
+	</select>
+	
+	<!-- public int deleteById(Long id); -->
+	<delete id="deleteById" parameterType="Long">
+		DELETE FROM product
+		WHERE id = #{id}
+	</delete>
+
+	<!-- public int deleteAll(); -->
+	<delete id="deleteAll">
+		DELETE FROM product
+	</delete>
+
+</mapper>
